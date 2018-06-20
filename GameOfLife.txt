@@ -1,0 +1,168 @@
+#include<iostream>
+#include<time.h>
+#include<cstdlib>
+#include<fstream>
+#include<string>
+
+using namespace std;
+
+class GameOfLife
+{
+	private:
+		int x;
+		int y;
+		int living;
+		int** table;
+
+	public:
+
+		GameOfLife(int x, int y, int living)
+		{
+			srand(time(NULL));
+			this->x = x;
+			this->y = y;
+
+
+			this->table = new int*[x + 2];
+
+			for (int i = 0; i < x+2; i++)
+			{
+				(this->table)[i] = new int[y+2];
+			}
+
+			this->living = living;
+			
+			for(int a=0; a<x+2; ++a)
+				for(int b=0; b<y+2; ++b)
+					this->table[a][b] = 0;
+
+
+			for (int i = 0; i < living; i++)
+			{
+				int a = rand() % x + 1;
+				int b = rand() % y + 1;
+				if(this->table[a][b]==0)
+					{this->table[a][b] = 1;}
+				else
+				{living++;}
+			}
+		}
+		
+		void print()
+		{
+			for (int i = 1; i <= x; i++)
+			{
+				for (int j = 1; j <= y; j++)
+				{
+					cout << table[i][j];
+				}
+				cout << "\n";
+			}
+		}
+		
+
+		
+		void NextRound()
+		{
+			system("CLS");
+			
+			int **tableTmp;
+			tableTmp = new int*[x + 2];
+
+			for (int i = 0; i < x+2; i++)
+			{
+				tableTmp[i] = new int[y+2];
+			}
+			
+			for(int a=0; a<x+2; ++a)
+				for(int b=0; b<y+2; ++b)
+					{tableTmp[a][b] = 0;}
+			
+			for(int i=1; i<x+1; ++i)
+				for(int j=1; j<y+1; ++j)
+					if(this->table[i][j] == 0)
+					{
+						int sum=0;
+						sum=this->table[i-1][j+1]+this->table[i][j+1]+this->table[i+1][j+1]+this->table[i-1][j]+this->table[i+1][j]+this->table[i-1][j-1]+this->table[i][j-1]+this->table[i+1][j-1];
+						if(sum == 3)
+						{
+							tableTmp[i][j]=1;
+						}
+					}
+					else
+					{
+						int sum=0;
+						sum=this->table[i-1][j+1]+this->table[i][j+1]+this->table[i+1][j+1]+this->table[i-1][j]+this->table[i+1][j]+this->table[i-1][j-1]+this->table[i][j-1]+this->table[i+1][j-1];
+						if(sum != 3 && sum != 2)
+						{
+							tableTmp[i][j]=0;
+						}
+					}
+		this->table = tableTmp;
+		this->print();
+		}
+		
+		void save()
+		{
+			string file_name;
+			file_name="Saved_table.txt";
+			ofstream myfile;
+			
+			myfile.open(file_name.c_str());
+			
+			if(myfile.is_open())
+			{
+				for (int i = 1; i <= x; i++)
+				{
+					for (int j = 1; j <= y; j++)
+					{
+						myfile << table[i][j];
+					}
+					myfile << "\n";
+				}
+			}
+			else
+			{cout<<"File cannot be found!";}
+			
+			myfile.close();
+		}
+		
+		void setTableFromFile()
+		{
+			string file_name;
+			file_name="Saved_table.txt";
+			fstream myfile;
+			string data;
+			
+			myfile.open(file_name.c_str());
+			
+			
+			if(myfile.is_open())
+			{
+				for(int a=1; a <= x; a++)
+				{
+					getline(myfile, data);
+					cout<<"\n"<<data<<"\n";
+					copy( data.begin(), data.end(), this->table[a] ); 
+				}
+			}
+			myfile.close();
+		}
+
+};
+
+int main()
+{
+	GameOfLife Game(3, 3, 3);
+	Game.print();
+	
+	int x;
+	cin>>x;
+	
+	Game.NextRound();
+	Game.save();
+	Game.setTableFromFile();
+	Game.print();
+	system("PAUSE");
+	return 0;
+}

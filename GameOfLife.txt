@@ -4,6 +4,9 @@
 #include<fstream>
 #include<string>
 
+//ELOOOOOOOOOOOOOOOOOOOOOOOOO
+//SENEGAL 2:1 Polska
+
 using namespace std;
 
 class GameOfLife

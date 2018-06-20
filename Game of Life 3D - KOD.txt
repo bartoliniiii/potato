@@ -1,0 +1,239 @@
+#include<iostream>
+#include<time.h>
+#include<cstdlib>
+#include<fstream>
+#include<string>
+#include<stdlib.h> 
+#include<windows.h>
+
+using namespace std;
+
+class GameOfLife
+{
+	private:
+		int x;
+		int y;
+		int z;
+		int living;
+		int*** table;
+
+	public:
+
+		GameOfLife(int x, int y, int z, int living)
+		{
+			srand(time(NULL));
+			this->x = x;
+			this->y = y;
+			this->z = z;
+
+
+			this->table = new int**[x + 2];
+
+			for (int i = 0; i < x+2; i++)
+			{
+				(this->table)[i] = new int*[y+2];
+			}
+			
+			for (int i = 0; i < x+2; i++)
+				for(int j=0; j< y+2; j++)
+				{
+					(this->table)[i][j] = new int[z+2];
+				}
+
+			this->living = living;
+			
+			for(int a=0; a<x+2; ++a)
+				for(int b=0; b<y+2; ++b)
+					for(int c=0; c<z+2; ++c)
+						(this->table)[a][b][c] = 0;
+
+
+			for (int i = 0; i < living; i++)
+			{
+				int a = rand() % x + 1;
+				int b = rand() % y + 1;
+				int c = rand() % z + 1;
+				if(this->table[a][b][c]==0)
+					{this->table[a][b][c] = 1;}
+				else
+				{++living;}
+			}
+		}
+		
+		void print()
+		{
+			cout<<"Front plan:"<<"\n";
+			for (int i = 1; i <= x; i++)
+			{
+				for (int j = 1; j <= z; j++)
+				{
+					cout << table[i][1][j];
+				}
+				cout << "\n";
+			}
+			
+			cout<<"Ceiling plan:"<<"\n";
+			for (int i = 1; i <= x; i++)
+			{
+				for (int j = 1; j <= y; j++)
+				{
+					cout << table[i][j][z];
+				}
+				cout << "\n";
+			}
+			
+			cout<<"Side plan:"<<"\n";
+			for (int i = 1; i <= y; i++)
+			{
+				for (int j = 1; j <= z; j++)
+				{
+					cout << table[1][i][j];
+				}
+				cout << "\n";
+			}
+			
+			
+		}
+		
+
+		
+		void NextRound()
+		{
+			system("CLS");
+			
+			int ***tableTmp;
+			tableTmp = new int**[x + 2];
+
+			for (int i = 0; i < x+2; i++)
+			{
+				tableTmp[i] = new int*[y+2];
+			}
+			
+			for (int i = 0; i < x+2; i++)
+				for(int j=0; j< y+2; j++)
+				{
+					(tableTmp)[i][j] = new int[z+2];
+				}
+			
+			for(int a=0; a<x+2; ++a)
+				for(int b=0; b<y+2; ++b)
+					for(int c=0; c<z+2; ++c)
+						(tableTmp)[a][b][c] = 0;
+			
+		
+			for(int i=1; i<x+1; ++i)
+				for(int j=1; j<y+1; ++j)
+					for(int k=1; k<z+1; ++k)
+					// if a cell is dead, it becomes alive in the next round if and only if it has 6, 5, 4, 3, 2 or 1 alive neighbours 
+					if(this->table[i][j][k] == 0)
+					{
+						int sum=0;
+						for(int l=i-1; l<=i+1; ++l)
+							for(int m=j-1; m<=j+1; ++m)
+								for(int n=k-1; n<=k+1; ++n)
+								{
+									if(l!=i && m!=j && n!=k)
+									sum += this->table[l][m][n]; 
+								}
+						
+						
+						if(sum == 6 || sum == 5 || sum == 4 || sum == 3 || sum == 2 || sum == 1)
+						{
+							tableTmp[i][j][k]=1;
+						}
+					}
+					// if a cell is alive, it stays alive in the next round if and only if it has precisely 9, 8, 7, 6, 5 or 4 alive neighbours
+					else
+					{
+						int sum=0;
+						
+						for(int l=i-1; l<=i+1; ++l)
+							for(int m=j-1; m<=j+1; ++m)
+								for(int n=k-1; n<=k+1; ++n)
+								{
+									if(l!=i && m!=j && n!=k)
+									sum += this->table[l][m][n]; 
+								}
+					
+						if(sum != 6 && sum != 8 && sum != 7 && sum != 5 && sum != 4 && sum !=9)
+						{
+							tableTmp[i][j][k]=0;
+						}
+					}
+		this->table = tableTmp;
+		this->print();
+		}
+		
+		void save()
+		{
+			string file_name;
+			file_name="Saved_table_3D.txt";
+			ofstream myfile;
+			
+			myfile.open(file_name.c_str());
+			
+			if(myfile.is_open())
+			{
+				for (int i = 1; i <= x; i++)
+				{
+					for (int j = 1; j <= y; j++)
+						for (int k = 1; k <= z; k++)
+						{
+						myfile<<table[i][j][k]<<"\n";
+						}
+				}
+			}
+			else
+			{cout<<"File cannot be found!";}
+			
+			myfile.close();
+		}
+		
+		void setTableFromFile()
+		{
+			string file_name;
+			file_name="Saved_table_3D.txt";
+			fstream myfile;
+			string data;
+			int tmp;
+			
+			myfile.open(file_name.c_str());
+			
+			
+			if(myfile.is_open())
+			{
+				for(int i=1; i<x+1; ++i)
+				for(int j=1; j<y+1; ++j)
+				for(int k=1; k<z+1; ++k)
+					while(myfile.eof())
+					{
+					getline(myfile, data);
+					tmp = atoi(data.c_str());
+					this->table[i][j][k] = tmp; 
+					}
+			}
+			myfile.close();
+			cout<<"Information from text file 'Saved_table_3D': "<<"\n";
+			this->print();
+		}
+
+};
+
+int main()
+{
+	GameOfLife Game(5, 5, 5, 20);
+	Game.print();
+	Sleep(3000);
+	
+	for(int i=1; i <= 10; i++)
+	{
+		Game.NextRound();
+		Game.save();
+		Sleep(250);
+	}
+	
+	
+	Game.setTableFromFile();
+	
+	return 0;
+}
